@@ -54,14 +54,6 @@ if (!empty($apiPathSegments[0])) {
 $isDirectVideoAccess = (strpos($requestPath, '/videos/') !== false) ||
                        (strpos($requestPath, '/index.php/video/') !== false);
 
-// If it's an API endpoint and not direct video access, check API key
-if ($isApiEndpoint && $apiKey !== $requiredApiKey) {
-    header('Content-Type: application/json');
-    http_response_code(401);
-    echo json_encode(['status' => 'error', 'message' => 'Unauthorized: Invalid API Key.']);
-    exit();
-}
-
 // Allowed origins for CORS from .env
 $allowedOrigins = [];
 if (isset($_ENV['ALLOWED_ORIGINS'])) {
@@ -88,6 +80,14 @@ $method = $_SERVER['REQUEST_METHOD'];
 // Handle preflight OPTIONS request
 if ($method === 'OPTIONS') {
     http_response_code(200);
+    exit();
+}
+
+// If it's an API endpoint and not direct video access, check API key
+// This check must be after the OPTIONS preflight handling
+if ($isApiEndpoint && $apiKey !== $requiredApiKey) {
+    http_response_code(401);
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized: Invalid API Key.']);
     exit();
 }
 
