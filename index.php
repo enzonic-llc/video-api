@@ -62,7 +62,23 @@ if ($isApiEndpoint && $apiKey !== $requiredApiKey) {
     exit();
 }
 
-header('Access-Control-Allow-Origin: *');
+// Allowed origins for CORS from .env
+$allowedOrigins = [];
+if (isset($_ENV['ALLOWED_ORIGINS'])) {
+    $allowedOrigins = explode(',', $_ENV['ALLOWED_ORIGINS']);
+    // Trim whitespace from each origin
+    $allowedOrigins = array_map('trim', $allowedOrigins);
+}
+
+// Set CORS headers
+if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowedOrigins)) {
+    header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+} else {
+    // Fallback for non-allowed origins or direct access, or if no Origin header is sent
+    // You might want to restrict this further based on security requirements
+    header('Access-Control-Allow-Origin: *');
+}
+
 header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-API-Key');
 header('Content-Type: application/json');
